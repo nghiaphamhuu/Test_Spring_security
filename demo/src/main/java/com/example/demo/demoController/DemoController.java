@@ -5,18 +5,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+import com.example.demo.user.User;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 
 
 @RestController
-@RequestMapping("/v1/demo/")
+@RequestMapping("/v1/demo")
 @RequiredArgsConstructor
 public class DemoController {
     
-    @GetMapping()
-    public ResponseEntity<String> sayHello() {
-        return ResponseEntity.ok("Hello");
+    private final DemoService demoService;
+
+    @GetMapping("/hello")
+    public ResponseEntity<List<User>> sayHello() {
+        return ResponseEntity.ok(demoService.findAllUser());
     }
     
 }

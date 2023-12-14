@@ -1,5 +1,7 @@
 package com.example.demo.auth;
 
+import com.example.demo.user.User;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,8 +11,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationResponse {
-    private String notValid;
+public class SignInResponse {
+    private User user;
+    
     private String token;
 
+    private String refreshToken;
 }
