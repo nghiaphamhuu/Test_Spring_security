@@ -11,12 +11,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<UserDetails>  findByEmail(String email);
 
-   @Query(value = """
-     SELECT u FROM users u INNER JOIN tokens t\s
-     on t.userId = u.id\s
-     WHERE t.refreshToken = :refreshToken AND t.expiresIn < CURDATE() \s
-     """)
-   List<UserDetails> findUserByRefreshToken(@Param("refreshToken") String refreshToken);
+   @Query("SELECT u FROM users u INNER JOIN tokens t on t.userId = u.id WHERE t.refreshToken = :refreshToken AND t.expiresIn < CURDATE() ")
+   List<UserDetails> findByRefreshToken(@Param("refreshToken") String refreshToken);
 } 
     
 

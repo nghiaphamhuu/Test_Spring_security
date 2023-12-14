@@ -97,7 +97,7 @@ public class AuthenticationService {
     }
 
     public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
-       var user = userRepository.findUserByRefreshToken(request.getTokenRefersh()).get(0);
+       var user = userRepository.findByRefreshToken(request.getTokenRefersh()).get(0);
         if(user == null){
             throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "entity not found"

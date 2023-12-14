@@ -2,6 +2,9 @@ package com.example.demo.token;
 
 import java.util.Date;
 
+import com.example.demo.user.User;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -30,14 +33,18 @@ public class Token {
 
     public String refreshToken;
 
-   // @ManyToOne(fetch = FetchType.LAZY)
-  //  @JoinTable(name = "users")
-   // @JoinColumn(name = "userId")
-    public String userId;
-
     public Date expiresIn;
 
     public Date updatedAt;
 
     public Date createdAt;
+
+    // Use @JoinColumn to specify the foreign key column
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    // Use @Column(insertable = false, updatable = false) to indicate that this property is not insertable or updatable
+    @Column(name = "user_id", insertable = false, updatable = false)
+    private Integer userId;
 }
