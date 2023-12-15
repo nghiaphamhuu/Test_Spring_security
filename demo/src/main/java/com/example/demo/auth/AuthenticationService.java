@@ -87,11 +87,6 @@ public class AuthenticationService {
         final String refreshToken;
         final String userEmail;
 
-        if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
-            throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Not found"
-            );
-        }
         refreshToken = authHeader.substring(7);
         userEmail = jwtService.extractUsername(refreshToken);
         if (userEmail != null) {
@@ -132,5 +127,6 @@ public class AuthenticationService {
 
         tokenRepository.saveAll(validUserTokens);
       }
+
     
 }

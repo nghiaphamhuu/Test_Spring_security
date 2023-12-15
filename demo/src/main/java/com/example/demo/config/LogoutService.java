@@ -5,22 +5,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.token.TokenRepository;
-import com.example.demo.user.UserRepository;
 
 @Service
 @RequiredArgsConstructor
 public class LogoutService implements LogoutHandler {
 
   private final TokenRepository tokenRepository;
-
-  private final UserRepository userRepository;
-
-  private final JwtService jwtService;
 
   @Override
   public void logout(
@@ -44,9 +38,5 @@ public class LogoutService implements LogoutHandler {
         tokenRepository.deleteAll(refreshTokenStore);
         SecurityContextHolder.clearContext();
     }
-
-    //userEmail = jwtService.extractUsername(refreshToken);
-
-    //tokenRepository.deleteTokenByEmail(email);
   }
 }
