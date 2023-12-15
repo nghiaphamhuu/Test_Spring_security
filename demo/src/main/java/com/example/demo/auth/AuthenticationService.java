@@ -60,7 +60,6 @@ public class AuthenticationService {
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
 
-                System.out.println(user);
         var jwtToken = jwtService.generateToken(user);
         var jwtRefreshToken = jwtService.generateRefreshToken(user);
         Token token = Token.builder()
@@ -70,7 +69,6 @@ public class AuthenticationService {
                     .updatedAt(today)
                 .user(user)
                     .build();
-        System.out.println(token);
         tokenRepository.save(token);
 
         return SignInResponse.builder()
