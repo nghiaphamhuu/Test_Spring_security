@@ -1,12 +1,11 @@
 package com.example.demo.auth;
 
-import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,10 +17,11 @@ import com.example.demo.token.TokenRepository;
 import com.example.demo.user.User;
 import com.example.demo.user.UserRepository;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
+import io.jsonwebtoken.io.IOException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +32,6 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
 
     private final JwtService jwtService;
-
-    private final AuthenticationManager authenticationManager;
 
     private final TokenRepository tokenRepository;
     
@@ -56,28 +54,13 @@ public class AuthenticationService {
             .build();
     }
 
-    public AuthenticationResponse authentication(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
-                request.getPassword())
-        );
-
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow();
-        
-        var jwtToken = jwtService.generateToken( user);
-
-        return AuthenticationResponse.builder()
-            .token(jwtToken)
-            .build();
-    }
-
     public SignInResponse signIn(SignInRequest request) {
         Date today = new Date();
 
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
+
+                System.out.println(user);
         var jwtToken = jwtService.generateToken(user);
         var jwtRefreshToken = jwtService.generateRefreshToken(user);
         var token = Token.builder()
@@ -86,7 +69,7 @@ public class AuthenticationService {
                     .createdAt(today)
                     .updatedAt(today)
                     .build();
-
+        System.out.println(token);
         tokenRepository.save(token);
 
         return SignInResponse.builder()
@@ -96,21 +79,58 @@ public class AuthenticationService {
             .build();
     }
 
-    public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
-       var user = userRepository.findByRefreshToken(request.getTokenRefersh()).get(0);
-        if(user == null){
+    public RefreshTokenResponse refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws IOException {
+        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        final String refreshToken;
+        final String userEmail;
+
+        if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
             throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "entity not found"
+                HttpStatus.NOT_FOUND, "Not found"
             );
         }
+        refreshToken = authHeader.substring(7);
+        userEmail = jwtService.extractUsername(refreshToken);
+        if (userEmail != null) {
+            var user = this.userRepository.findByEmail(userEmail)
+                    .orElseThrow();
+            if (jwtService.isTokenValid(refreshToken, user)) {
+                revokeAllUserTokens(user);
+                var accessToken = jwtService.generateToken(user);
+                var newRefreshToken = jwtService.generateRefreshToken(user);
 
-        var jwtToken = jwtService.generateToken(user);
-        var jwtRefreshToken = jwtService.generateRefreshToken(user);
-        
-        return RefreshTokenResponse.builder()
-                .token(jwtToken)
-                .refreshToken(jwtRefreshToken)
-                .build();
+                return RefreshTokenResponse.builder()
+                    .token(accessToken)
+                    .refreshToken(newRefreshToken)
+                    .build();
+            }
+        }
+
+        throw new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Not found"
+        );
     }
+
+    private void revokeAllUserTokens(User user) {
+        var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+
+        if (validUserTokens.isEmpty()) {
+            return;
+        }
+          
+        validUserTokens.forEach(token -> {
+            Date today = new Date();
+            Calendar cal = new GregorianCalendar();
+            cal.setTime(today);
+            cal.add(Calendar.DAY_OF_MONTH, -30);
+            Date today30 = cal.getTime();
+            token.setExpiresIn(today30);
+        });
+
+        tokenRepository.saveAll(validUserTokens);
+      }
     
 }

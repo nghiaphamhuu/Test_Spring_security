@@ -26,7 +26,7 @@ public class JwtService {
 
     final static long TIME_REFRESH_TOKEN_EXPRIED = 1000*60*60*24*30; //30 day
 
-    private static final String SECRECT_KEY = "OEO6e1rqmybayNCKREqirm5WAfvIZH2u";
+    private static final String SECRECT_KEY = "9a4f2c8d3b7a1e6f45c8a0b3f267d8b1d4e6f3c8a9d2b5f8e3a9c8b5f6v8a3d9";
 
     public String extractUserName(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -99,4 +99,8 @@ public class JwtService {
         byte [] keyByte = Decoders.BASE64.decode(SECRECT_KEY);
         return Keys.hmacShaKeyFor(keyByte);
     }
+
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+      }
 }

@@ -6,11 +6,13 @@ import java.util.Date;
 
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,6 +29,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
+@EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails{
 
     @Id
@@ -42,22 +45,24 @@ public class User implements UserDetails{
     @Column(name = "email")
     private String email;
 
-    @Column(name = "password")
-    private String password;
-
     @Column(name = "hash")
     private String hash;
 
-    @Column(name = "createdAt")
-    private Date createdAt;
+    @Column(name = "password")
+    private String password;
 
-    @Column(name = "updatedAt")
+    @Column(name = "updated_at")
+    @LastModifiedDate
     private Date updatedAt;
 
-    @PrePersist
-    public void prePersist() {
-        this.updatedAt = new Date();
-    }
+    // @Column(name = "updated_at")
+    // @LastModifiedDate
+    // private Date updated_at;
+
+    // @PrePersist
+    // public void prePersist() {
+    //     this.updatedAt = new Date();
+    // }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

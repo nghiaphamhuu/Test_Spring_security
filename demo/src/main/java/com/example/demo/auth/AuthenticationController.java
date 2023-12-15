@@ -3,6 +3,9 @@ package com.example.demo.auth;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.jsonwebtoken.io.IOException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import java.util.regex.Matcher;
@@ -34,6 +37,8 @@ public class AuthenticationController {
 
     @PostMapping("/sign-in")
     public ResponseEntity<SignInResponse> signIn(@RequestBody SignInRequest request) {
+        System.out.println("sign In controller");
+
         boolean isNotValid = checkIsNotValid(request.getEmail(), request.getPassword());
 
         if(isNotValid){
@@ -43,13 +48,12 @@ public class AuthenticationController {
         return ResponseEntity.ok(service.signIn(request));
     }
 
-    
-
     @PostMapping("/refresh-token")
-    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
-        
-        
-        return ResponseEntity.ok(service.refreshToken(request));
+    public ResponseEntity<RefreshTokenResponse> refreshToken(
+        HttpServletRequest request,
+        HttpServletResponse response
+    ) throws IOException {
+        return ResponseEntity.ok(service.refreshToken(request, response));
     }
 
 
@@ -70,6 +74,4 @@ public class AuthenticationController {
 
         return false;
     }
-    
-    
 }
