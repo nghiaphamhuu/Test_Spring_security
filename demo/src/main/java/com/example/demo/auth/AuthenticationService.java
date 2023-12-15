@@ -63,11 +63,12 @@ public class AuthenticationService {
                 System.out.println(user);
         var jwtToken = jwtService.generateToken(user);
         var jwtRefreshToken = jwtService.generateRefreshToken(user);
-        var token = Token.builder()
+        Token token = Token.builder()
                     .refreshToken(jwtRefreshToken)
                     .expiresIn(new Date(today.getTime() + (1000 * 60 * 60 * 24 * 30)))
                     .createdAt(today)
                     .updatedAt(today)
+                .user(user)
                     .build();
         System.out.println(token);
         tokenRepository.save(token);
