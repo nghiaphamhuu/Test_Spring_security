@@ -67,7 +67,7 @@ public class AuthenticationService {
                     .expiresIn(new Date(today.getTime() + (1000 * 60 * 60 * 24 * 30)))
                     .createdAt(today)
                     .updatedAt(today)
-                .user(user)
+                    .user(user)
                     .build();
         tokenRepository.save(token);
 
